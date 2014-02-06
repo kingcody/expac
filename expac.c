@@ -38,6 +38,7 @@
 #define DEFAULT_DELIM        "\n"
 #define DEFAULT_LISTDELIM    "  "
 #define DEFAULT_TIMEFMT      "%c"
+#define DEFAULT_PACCONF      "/etc/pacman.conf"
 #define FORMAT_TOKENS        "BCDEGLMNOPRSVabdhmnprsuvw%"
 #define SIZE_TOKENS          "BKMGTPEZY\0"
 
@@ -58,6 +59,7 @@ bool local = false;
 bool groups = false;
 bool localpkg = false;
 char humansize = 'B';
+char *pacconf;
 const char *format = NULL;
 const char *timefmt = NULL;
 const char *listdelim = NULL;
@@ -162,9 +164,14 @@ static alpm_handle_t *alpm_init(void) {
 
   db_local = alpm_get_localdb(handle);
 
-  fp = fopen("/etc/pacman.conf", "r");
+  pacconf = getenv("PACMAN_CONF") ? getenv("PACMAN_CONF") : DEFAULT_PACCONF;
+
+  fp = fopen(pacconf, "r");
   if (!fp) {
-    perror("fopen: /etc/pacman.conf");
+    char *error = malloc(strlen(pacconf)+8);
+    strcpy(error, "fopen: ");
+    strcat(error, pacconf);
+    perror(error);
     return handle;
   }
 
